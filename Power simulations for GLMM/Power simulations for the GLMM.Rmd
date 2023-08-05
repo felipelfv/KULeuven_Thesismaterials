@@ -160,6 +160,6 @@ plot(pc_QD)
 pc_rankings <- powerCurve(model, test = fixed("rankings1", "z"), along = "participant", nsim = 1000)
 plot(pc_rankings)
 
-#these two last steps will take awhile
+#these two last steps will take awhile (around an hour in my macbook air - ventura 13.3)
 ```
 
