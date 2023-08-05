@@ -1,0 +1,165 @@
+---
+title: "Power simulations for GLMMs"
+author: "Felipe Luiz Fontana Vieira"
+date: "2023-08-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(simr)
+library(lme4)
+```
+
+```{r data wrangling, echo=FALSE, results='hide'}
+data <- read_excel("~/Desktop/missingpartincluded.xlsx")
+
+#rename trials.thisindex to questions going from 1-26 instead of 0-25
+data <- data %>%
+  group_by(participant) %>%
+  mutate(questions = c(1:26)) %>%
+  ungroup()
+
+#mutate trials.thisindex, participant, answer and questions
+data <- data %>%
+  mutate(trials.thisIndex = as.factor(trials.thisIndex)) %>%
+  mutate(participant = as.factor(participant)) %>%
+  mutate(Answer = as.factor(Answer)) %>%
+  mutate(questions = as.factor(questions))
+#summary(data)
+
+#recode score
+data <- mutate(data, Answer = dplyr::recode(Answer,"right" = 1, "wrong" = 0))
+
+#summary per participant
+sumstatsbyparticipant <- data %>%
+  group_by(participant) %>%
+  summarise(amount_correct = sum(Answer),
+            score = mean(Answer), # score for that participant (i.e. mean across the questions for that participant)
+            sd = sd(Answer),
+            min = score - sd(Answer)/ sqrt(n()), #meanscore for that participant - 1 standard error 
+            max = score + sd(Answer)/ sqrt(n()), #meanscore + 1 standard error
+            key_resp_rt_minutes = mean(key_resp.rt / 60)) #check this; before it worked without it. converting to min
+
+#adding in participants group (ranked as 1 vs not rankedas 0)
+sumstatsbyparticipant <- sumstatsbyparticipant %>%
+  mutate(rankings = c(0,1,0,1,1,0,0,1,1,1,0,0,0,1,0,1,0,1,1)) %>%
+  mutate(rankings = as.factor(rankings)) %>%
+  mutate(total_rptime = key_resp_rt_minutes * 26)
+
+rankingdat <-sumstatsbyparticipant %>%
+  select(participant, rankings)
+
+#adding rankings to data 
+data <- inner_join(x = data, y = rankingdat, by = "participant")
+#str(data)
+
+#ranked players 
+rankedplayers <- data %>%
+  filter(rankings == "1") %>%
+  group_by(questions) %>%
+  summarise(amount_correct = sum(Answer),
+            scoreR = mean(Answer),
+            sd = sd(Answer),
+            min = scoreR - sd(Answer)/ sqrt(n()), #meanscore - 1 standard error (SE = sd/sqrt(26), gives us the standard error)
+            max = scoreR + sd(Answer)/ sqrt(n()), #meanscore + 1 standard error
+            minimum = min(Answer),
+            maximum = max(Answer),
+            median = median(Answer))
+
+rankedplayersrt <- data %>%
+  filter(rankings == "1") %>%
+  summarise(total_averagert = mean(key_resp.rt),
+            total_sumrt = sum(key_resp.rt))
+
+#nonranked players
+nonrankedplayers <- data %>%
+  filter(rankings == "0") %>%
+  group_by(questions) %>%
+  summarise(amount_correct = sum(Answer),
+            scoreNR = mean(Answer),
+            sd = sd(Answer),
+            min = scoreNR - sd(Answer)/ sqrt(n()), #meanscore - 1 standard error (SE = sd/sqrt(26) gives us the standard error 
+            max = scoreNR + sd(Answer)/ sqrt(n()), #meanscore + 1 standard error
+            minimum = min(Answer),
+            maximum = max(Answer),
+            median = median(Answer),
+            total_averagert = mean(key_resp.rt))
+
+nonrankedplayersrt <- data %>%
+  filter(rankings == "0") %>%
+  summarise(total_averagert = mean(key_resp.rt),
+            total_sumrt = sum(key_resp.rt))
+
+#total number of correct answers for each participant
+total_correct <- aggregate(Answer ~ participant, data = data, FUN = function(x) sum(x == 1))
+
+#renaming the new column to "total_correct"
+colnames(total_correct)[2] <- "total_correct"
+
+#total number of incorrect answers for each participant
+total_incorrect <- aggregate(Answer ~ participant, data = data, FUN = function(x) sum(x == 0))
+
+#renaming the new column to "total_incorrect"
+colnames(total_incorrect)[2] <- "total_incorrect"
+
+#merging the total correct and incorrect answers with the original dataset
+data <- merge(data, total_correct, by = "participant")
+data <- merge(data, total_incorrect, by = "participant")
+
+#vector with easy question numbers
+easy_questions <- c(3, 6, 12, 15, 22, 24)
+
+#new column based on whether "questions" is in the easy questions list
+data$Question_Difficulty <- ifelse(data$questions %in% easy_questions, "Easy", "Hard")
+
+#factorizing the column 
+data$Question_Difficulty <- as.factor(data$Question_Difficulty)
+#hard' the reference level
+data$Question_Difficulty <- relevel(data$Question_Difficulty, ref = "Hard")
+
+selected_data <- data %>%
+  select(Answer, Question_Difficulty, rankings, participant)
+```
+
+# Simulations 
+
+This file contains the results from power simulations conducted for the model reported in the thesis. The R Markdown file contains all the steps, in which it is also possible to change the desired fixed effects. In this case, the desired fixed effects for both variables were 3. For more information on the R package, see the article Green \& MacLeod, 2015 (SIMR: an R package for power analysis of generalized linear mixed models by simulation).
+
+```{r, echo = FALSE}
+#this was the model reported in the thesis
+model <- glmer(Answer ~ Question_Difficulty + rankings + (1 | participant), 
+               family = binomial, 
+               data = data)
+
+#POWER SIMULATIONS PART
+#view the current effect size
+fixef(model)["Question_DifficultyEasy"]
+
+#set the desired effect size for one variable, for example the easy questions related to hard questions
+fixef(model)["Question_DifficultyEasy"] <- 3
+fixef(model)["rankings1"] <- 3 #here experts in comparison to beginners
+#in reality the fixed effects were 2.69 for easy questions and 4.59 for experts, but if you use the estimated fixed effects here, then the power will be inflated
+
+#power simulations
+power_QD <- powerSim(model, test = fixed("Question_DifficultyEasy", "z"), nsim = 1000)
+summary(power_QD)
+
+power_rankings <- powerSim(model, test = fixed("rankings1", "z"), nsim = 1000)
+summary(power_rankings)
+
+#power curves based on the fixed effects and sample
+pc_QD <- powerCurve(model, test = fixed("Question_DifficultyEasy", "z"), along = "participant", nsim = 1000)
+plot(pc_QD)
+
+pc_rankings <- powerCurve(model, test = fixed("rankings1", "z"), along = "participant", nsim = 1000)
+plot(pc_rankings)
+
+#these two last steps will take awhile
+```
+
