@@ -1,0 +1,182 @@
+---
+title: "Brunner-Munzel’s test"
+author: "Felipe Luiz Fontana Vieira"
+date: "2023-08-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr)
+library(brunnermunzel)
+library(readxl)
+library(dplyr)
+```
+
+```{r data wrangling, echo=FALSE, results='hide'}
+data <- read_excel("~/Desktop/missingpartincluded.xlsx")
+
+#rename trials.thisindex to questions going from 1-26 instead of 0-25
+data <- data %>%
+  group_by(participant) %>%
+  mutate(questions = c(1:26)) %>%
+  ungroup()
+
+#mutate trials.thisindex, participant, answer and questions
+data <- data %>%
+  mutate(trials.thisIndex = as.factor(trials.thisIndex)) %>%
+  mutate(participant = as.factor(participant)) %>%
+  mutate(Answer = as.factor(Answer)) %>%
+  mutate(questions = as.factor(questions))
+#summary(data)
+
+#recode score
+data <- mutate(data, Answer = dplyr::recode(Answer,"right" = 1, "wrong" = 0))
+
+#summary per participant
+sumstatsbyparticipant <- data %>%
+  group_by(participant) %>%
+  summarise(amount_correct = sum(Answer),
+            score = mean(Answer), # score for that participant (i.e. mean across the questions for that participant)
+            sd = sd(Answer),
+            min = score - sd(Answer)/ sqrt(n()), #meanscore for that participant - 1 standard error 
+            max = score + sd(Answer)/ sqrt(n()), #meanscore + 1 standard error
+            key_resp_rt_minutes = mean(key_resp.rt / 60)) #check this; before it worked without it. converting to min
+
+#adding in participants group (ranked as 1 vs not rankedas 0)
+sumstatsbyparticipant <- sumstatsbyparticipant %>%
+  mutate(rankings = c(0,1,0,1,1,0,0,1,1,1,0,0,0,1,0,1,0,1,1)) %>%
+  mutate(rankings = as.factor(rankings)) %>%
+  mutate(total_rptime = key_resp_rt_minutes * 26)
+
+rankingdat <-sumstatsbyparticipant %>%
+  select(participant, rankings)
+
+#adding rankings to data 
+data <- inner_join(x = data, y = rankingdat, by = "participant")
+#str(data)
+
+#ranked players 
+rankedplayers <- data %>%
+  filter(rankings == "1") %>%
+  group_by(questions) %>%
+  summarise(amount_correct = sum(Answer),
+            scoreR = mean(Answer),
+            sd = sd(Answer),
+            min = scoreR - sd(Answer)/ sqrt(n()), #meanscore - 1 standard error (SE = sd/sqrt(26), gives us the standard error)
+            max = scoreR + sd(Answer)/ sqrt(n()), #meanscore + 1 standard error
+            minimum = min(Answer),
+            maximum = max(Answer),
+            median = median(Answer))
+
+rankedplayersrt <- data %>%
+  filter(rankings == "1") %>%
+  summarise(total_averagert = mean(key_resp.rt),
+            total_sumrt = sum(key_resp.rt))
+
+#nonranked players
+nonrankedplayers <- data %>%
+  filter(rankings == "0") %>%
+  group_by(questions) %>%
+  summarise(amount_correct = sum(Answer),
+            scoreNR = mean(Answer),
+            sd = sd(Answer),
+            min = scoreNR - sd(Answer)/ sqrt(n()), #meanscore - 1 standard error (SE = sd/sqrt(26) gives us the standard error 
+            max = scoreNR + sd(Answer)/ sqrt(n()), #meanscore + 1 standard error
+            minimum = min(Answer),
+            maximum = max(Answer),
+            median = median(Answer),
+            total_averagert = mean(key_resp.rt))
+
+nonrankedplayersrt <- data %>%
+  filter(rankings == "0") %>%
+  summarise(total_averagert = mean(key_resp.rt),
+            total_sumrt = sum(key_resp.rt))
+
+#total number of correct answers for each participant
+total_correct <- aggregate(Answer ~ participant, data = data, FUN = function(x) sum(x == 1))
+
+#renaming the new column to "total_correct"
+colnames(total_correct)[2] <- "total_correct"
+
+#total number of incorrect answers for each participant
+total_incorrect <- aggregate(Answer ~ participant, data = data, FUN = function(x) sum(x == 0))
+
+#renaming the new column to "total_incorrect"
+colnames(total_incorrect)[2] <- "total_incorrect"
+
+#merging the total correct and incorrect answers with the original dataset
+data <- merge(data, total_correct, by = "participant")
+data <- merge(data, total_incorrect, by = "participant")
+```
+
+# Results for Brunner-Munzel’s test
+
+This document highlights the conducted Brunner-Munzel’s test, as reported in the footnote of the master thesis (p. 13). It is strongly recommended to read the article that inspired this analysis (\textit{Psychologists Should Use Brunner-Munzel’s Instead of Mann-Whitney’s U Test as the Default Nonparametric Procedure}; Karch, 2021). Here it is just briefly shown that the results are in line with the reported findings in the thesis manuscript. 
+
+```{r test code, echo = FALSE}
+#install.packages("brunnermunzel")
+#library(brunnermunzel)
+#package needed
+
+#data
+expertscore <- subset(sumstatsbyparticipant, rankings == "1", select = score)
+expertscore_df <- as.data.frame(expertscore)
+intermediatescore <- subset(sumstatsbyparticipant, rankings == "0", select = score)
+intermediates_df <- as.data.frame(intermediatescore)
+
+res <- brunnermunzel.test(score ~ rankings, data=sumstatsbyparticipant, alternative = c("less"))
+print(res)
+
+res2 <- brunnermunzel.test(key_resp_rt_minutes ~ rankings, data=sumstatsbyparticipant, alternative = c("greater"))
+print(res2)
+
+res3 <- brunnermunzel.permutation.test(score ~ rankings, data=sumstatsbyparticipant, alternative = c("less"))
+print(res3)
+
+res4 <- brunnermunzel.permutation.test(key_resp_rt_minutes ~ rankings, data=sumstatsbyparticipant, alternative = c("greater"))
+print(res4)
+```
+
+```{r, echo = FALSE, include = FALSE}
+#Based on the appendix in Karch, 2021
+#this part of the code should be choosen based on the specific brunner munzel test you chose from the above chunk. 
+#it is only for the purpose of illustration
+
+#functions to calculate Wilcoxon-Mann-Whitney odds and Cliff's delta
+get_wmw_odds <- function(stoc_sup) { return(stoc_sup / (1 - stoc_sup)) }
+get_cliff_delta <- function(stoc_sup) { return(1 - 2 * stoc_sup) }
+
+#extract stochastic superiority (P) from the test results
+stoc_sup_res <- unname(res$estimate)
+stoc_sup_res2 <- unname(res2$estimate)
+
+#calculate Wilcoxon-Mann-Whitney odds
+wmw_odds_res <- get_wmw_odds(stoc_sup_res)
+wmw_odds_res2 <- get_wmw_odds(stoc_sup_res2)
+
+#calculate Cliff's delta
+cliff_delta_res <- get_cliff_delta(stoc_sup_res)
+cliff_delta_res2 <- get_cliff_delta(stoc_sup_res2)
+
+#print Cliff's delta
+print(cliff_delta_res)
+print(cliff_delta_res2)
+
+#calculate and print confidence intervals for Wilcoxon-Mann-Whitney odds
+wmw_odds_ci_res <- get_wmw_odds(res$conf.int)
+wmw_odds_ci_res2 <- get_wmw_odds(res2$conf.int)
+print(wmw_odds_ci_res)
+print(wmw_odds_ci_res2)
+
+#calculate and print confidence intervals for Cliff's delta
+cliff_delta_ci_res <- get_cliff_delta(res$conf.int)
+cliff_delta_ci_res <- cliff_delta_ci_res[c(2, 1)]
+cliff_delta_ci_res2 <- get_cliff_delta(res2$conf.int)
+cliff_delta_ci_res2 <- cliff_delta_ci_res2[c(2, 1)]
+print(cliff_delta_ci_res)
+print(cliff_delta_ci_res2)
+```
+
