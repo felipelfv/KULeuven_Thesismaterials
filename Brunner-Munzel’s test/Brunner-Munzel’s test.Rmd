@@ -145,7 +145,7 @@ print(res4)
 #this part of the code should be choosen based on the specific brunner munzel test you chose from the above chunk. 
 #it is only for the purpose of illustration
 
-#functions to calculate Wilcoxon-Mann-Whitney odds and Cliff's delta
+#functions to calculate wilcoxon-mann-whitney odds and cliff's delta
 get_wmw_odds <- function(stoc_sup) { return(stoc_sup / (1 - stoc_sup)) }
 get_cliff_delta <- function(stoc_sup) { return(1 - 2 * stoc_sup) }
 
@@ -153,25 +153,25 @@ get_cliff_delta <- function(stoc_sup) { return(1 - 2 * stoc_sup) }
 stoc_sup_res <- unname(res$estimate)
 stoc_sup_res2 <- unname(res2$estimate)
 
-#calculate Wilcoxon-Mann-Whitney odds
+#calculate wilcoxon-mann-whitney odds
 wmw_odds_res <- get_wmw_odds(stoc_sup_res)
 wmw_odds_res2 <- get_wmw_odds(stoc_sup_res2)
 
-#calculate Cliff's delta
+#calculate cliff's delta
 cliff_delta_res <- get_cliff_delta(stoc_sup_res)
 cliff_delta_res2 <- get_cliff_delta(stoc_sup_res2)
 
-#print Cliff's delta
+#print cliff's delta
 print(cliff_delta_res)
 print(cliff_delta_res2)
 
-#calculate and print confidence intervals for Wilcoxon-Mann-Whitney odds
+#calculate and print confidence intervals for wilcoxon-mann-whitney odds
 wmw_odds_ci_res <- get_wmw_odds(res$conf.int)
 wmw_odds_ci_res2 <- get_wmw_odds(res2$conf.int)
 print(wmw_odds_ci_res)
 print(wmw_odds_ci_res2)
 
-#calculate and print confidence intervals for Cliff's delta
+#calculate and print confidence intervals for cliff's delta
 cliff_delta_ci_res <- get_cliff_delta(res$conf.int)
 cliff_delta_ci_res <- cliff_delta_ci_res[c(2, 1)]
 cliff_delta_ci_res2 <- get_cliff_delta(res2$conf.int)
