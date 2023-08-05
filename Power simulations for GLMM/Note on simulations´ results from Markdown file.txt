@@ -1,0 +1,1 @@
+> summary(power_rankings)  successes trials  mean     lower     upper1       917   1000 0.917 0.8981467 0.9333511> summary(power_QD)  successes trials  mean    lower   upper1       992   1000 0.992 0.984298 0.99654
