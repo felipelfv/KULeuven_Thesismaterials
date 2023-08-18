@@ -1,0 +1,64 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 R version 4.1.2 (2021-11-01)\
+Platform: x86_64-apple-darwin17.0 (64-bit)\
+Running under: macOS 13.3\
+\
+Matrix products: default\
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib\
+\
+locale:\
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8\
+\
+attached base packages:\
+[1] grid      stats     graphics  grDevices utils     datasets  methods   base     \
+\
+other attached packages:\
+ [1] brms_2.19.0      Rcpp_1.0.10      kableExtra_1.3.4 knitr_1.42       caret_6.0-94     DHARMa_0.4.6    \
+ [7] lattice_0.20-45  boot_1.3-28.1    gplots_3.1.3     scales_1.2.1     effectsize_0.8.3 asht_1.0.0      \
+[13] bpcp_1.4.2       exact2x2_1.6.8   exactci_1.4-2    testthat_3.1.6   ssanv_1.1        plotly_4.10.1   \
+[19] lme4_1.1-31      pROC_1.18.0      effsize_0.8.1    survey_4.1-1     Matrix_1.5-1     coin_1.4-2      \
+[25] survival_3.5-0   rstatix_0.7.2    gridExtra_2.3    visreg_2.7.0     ggpubr_0.5.0     cowplot_1.1.1   \
+[31] pwr_1.3-0        showtext_0.9-5   showtextdb_3.0   sysfonts_0.8.8   broom_1.0.4      car_3.1-1       \
+[37] carData_3.0-5    psych_2.2.9      readxl_1.4.1     forcats_1.0.0    stringr_1.5.0    dplyr_1.1.0     \
+[43] purrr_1.0.1      readr_2.1.3      tidyr_1.3.0      tibble_3.1.8     ggplot2_3.4.2    tidyverse_1.3.2 \
+[49] tinytex_0.44    \
+\
+loaded via a namespace (and not attached):\
+  [1] estimability_1.4.1   ModelMetrics_1.2.2.2 coda_0.19-4          dygraphs_1.1.1.6     multcomp_1.4-24     \
+  [6] data.table_1.14.6    rpart_4.1.19         inline_0.3.19        hardhat_1.2.0        doParallel_1.0.17   \
+ [11] generics_0.1.3       callr_3.7.3          TH.data_1.1-2        proxy_0.4-27         future_1.31.0       \
+ [16] tzdb_0.3.0           webshot_0.5.4        xml2_1.3.3           lubridate_1.9.2      httpuv_1.6.8        \
+ [21] StanHeaders_2.21.0-7 assertthat_0.2.1     gargle_1.3.0         gower_1.0.1          xfun_0.37           \
+ [26] hms_1.1.2            bayesplot_1.10.0     evaluate_0.20        promises_1.2.0.1     fansi_1.0.4         \
+ [31] caTools_1.18.2       dbplyr_2.3.0         igraph_1.3.5         DBI_1.1.3            htmlwidgets_1.6.1   \
+ [36] tensorA_0.36.2       googledrive_2.0.0    stats4_4.1.2         ellipsis_0.3.2       crosstalk_1.2.0     \
+ [41] backports_1.4.1      insight_0.19.3       markdown_1.5         RcppParallel_5.1.6   libcoin_1.0-9       \
+ [46] vctrs_0.5.2          abind_1.4-5          withr_2.5.0          checkmate_2.1.0      emmeans_1.8.4-1     \
+ [51] prettyunits_1.1.1    xts_0.12.2           mnormt_2.1.1         svglite_2.1.1        lazyeval_0.2.2      \
+ [56] crayon_1.5.2         recipes_1.0.4        pkgconfig_2.0.3      labeling_0.4.2       nlme_3.1-162        \
+ [61] nnet_7.3-18          rlang_1.1.1          globals_0.16.2       lifecycle_1.0.3      miniUI_0.1.1.1      \
+ [66] colourpicker_1.2.0   sandwich_3.0-2       modelr_0.1.10        cellranger_1.1.0     distributional_0.3.2\
+ [71] matrixStats_0.63.0   datawizard_0.7.1     loo_2.5.1            zoo_1.8-12           reprex_2.0.2        \
+ [76] base64enc_0.1-3      processx_3.8.0       googlesheets4_1.0.1  viridisLite_0.4.1    parameters_0.21.1   \
+ [81] bitops_1.0-7         gap.datasets_0.0.5   KernSmooth_2.23-20   parallelly_1.34.0    shinystan_2.6.0     \
+ [86] ggsignif_0.6.4       magrittr_2.0.3       plyr_1.8.8           threejs_0.3.3        compiler_4.1.2      \
+ [91] rstantools_2.2.0     cli_3.6.0            listenv_0.9.0        ps_1.7.2             Brobdingnag_1.2-9   \
+ [96] MASS_7.3-58.2        mgcv_1.8-41          tidyselect_1.2.0     stringi_1.7.12       mitools_2.4         \
+[101] yaml_2.3.7           bridgesampling_1.1-2 tools_4.1.2          timechange_0.2.0     future.apply_1.10.0 \
+[106] parallel_4.1.2       rstudioapi_0.14      foreach_1.5.2        prodlim_2019.11.13   posterior_1.3.1     \
+[111] farver_2.1.1         digest_0.6.31        shiny_1.7.5          lava_1.7.1           qgam_1.3.4          \
+[116] later_1.3.0          httr_1.4.4           colorspace_2.1-0     rvest_1.0.3          brio_1.1.3          \
+[121] fs_1.6.1             splines_4.1.2        shinythemes_1.2.0    systemfonts_1.0.4    xtable_1.8-4        \
+[126] jsonlite_1.8.4       nloptr_2.0.3         timeDate_4022.108    rstan_2.21.8         modeltools_0.2-23   \
+[131] ipred_0.9-13         gap_1.5-1            R6_2.5.1             pillar_1.8.1         htmltools_0.5.4     \
+[136] mime_0.12            glue_1.6.2           fastmap_1.1.1        minqa_1.2.5          DT_0.27             \
+[141] class_7.3-21         codetools_0.2-19     pkgbuild_1.4.0       mvtnorm_1.1-3        utf8_1.2.3          \
+[146] perm_1.0-0.2         gtools_3.9.4         shinyjs_2.1.0        rmarkdown_2.20       munsell_0.5.0       \
+[151] e1071_1.7-13         iterators_1.0.14     haven_2.5.1          reshape2_1.4.4       gtable_0.3.1        \
+[156] bayestestR_0.13.1   onIn}
